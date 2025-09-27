@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CustomClockWidget</string>
+    <string name="app_exclaimer">Экран Самого Приложения.\nЗдесь будут настройки виджета</string>
+    <string name="revision">Версия: %1$s</string>
+    <string name="date">widget Date</string>
+    <string name="time">widget Time</string>
+</resources>
