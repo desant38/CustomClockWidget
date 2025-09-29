@@ -4,10 +4,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ServiceInfo
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
@@ -29,16 +28,7 @@ class WidgetUpdateService : Service() {
         val notification = createNotification()
 
         // --- ГЛАВНОЕ ИЗМЕНЕНИЕ: Запускаем сервис в приоритетном режиме ---
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE это Android 14
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC // <-- Вот оно, подтверждение типа
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
-
+        startForeground(NOTIFICATION_ID, notification)
 
         // Регистрируем наш "стукач", как и раньше
         timeReceiver = TimeTickReceiver()
@@ -66,13 +56,15 @@ class WidgetUpdateService : Service() {
     // --- НОВЫЙ КОД: Функция для создания канала уведомлений ---
     private fun createNotificationChannel() {
         // Проверяем, является ли версия Android 8.0 (Oreo) или выше
-        val serviceChannel = NotificationChannel(
-            CHANNEL_ID,
-            "Канал сервиса виджета часов", // Это имя будет видно в настройках приложения
-            NotificationManager.IMPORTANCE_LOW // Низкий приоритет, без звука
-        )
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(serviceChannel)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val serviceChannel = NotificationChannel(
+                CHANNEL_ID,
+                "Канал сервиса виджета часов", // Это имя будет видно в настройках приложения
+                NotificationManager.IMPORTANCE_LOW // Низкий приоритет, без звука
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(serviceChannel)
+        }
     }
 
 
@@ -81,8 +73,53 @@ class WidgetUpdateService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Виджет часов")
             .setContentText("Обновление времени активно")
-            .setSmallIcon(android.R.drawable.ic_menu_recent_history) // Важно! Нужна иконка
+            .setSmallIcon(R.mipmap.ic_launcher_round) // Важно! Нужна иконка
             .setOngoing(true) // Уведомление нельзя будет смахнуть
             .build()
     }
 }
+
+
+
+
+/** "Дворецкий" (Service).
+    * Его задача — "оживлять" (включать и выключать) "стукача" TimeTickReceiver.
+    * Это сердце нашего механизма. Он будет "жить" в фоне, только пока на экране есть хотя бы один наш виджет.
+
+
+package ysg.home.cstmclckwdgt
+
+import android.app.Service
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.IBinder
+
+class WidgetUpdateService : Service() {
+
+    // Создаём экземпляр нашего "стукача" или "посыльного"
+    private val timeTickReceiver = TimeTickReceiver()
+
+    override fun onCreate() {
+        super.onCreate()
+        // Когда сервис создаётся, он регистрирует "стукача",
+        // чтобы тот начал слушать ежеминутные сигналы системы.
+        registerReceiver(timeTickReceiver, IntentFilter(Intent.ACTION_TIME_TICK))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Когда сервис уничтожается, он "увольняет" стукача,
+        // чтобы перестать слушать сигналы и экономить батарею.
+        unregisterReceiver(timeTickReceiver)
+    }
+
+    // Этот метод нам не нужен для такого простого сервиса, просто оставляем.
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+}
+
+ * Что он делает: Очень просто — при своём создании
+ * он начинает слушать ежеминутный "стук в бубен от стукача, на которого мы подписались" (регистрирует
+ * системный сигнал ACTION_TIME_TICK), а при уничтожении — перестаёт.
+ * */

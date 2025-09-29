@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -5,16 +6,23 @@ plugins {
 
 android {
     namespace = "ysg.home.cstmclckwdgt"
-    compileSdk = 34
+    compileSdk = 36
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+    }
 
     defaultConfig {
         applicationId = "ysg.home.cstmclckwdgt"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "APP_VERSION", "\"$versionName\"")
     }
 
     buildTypes {
@@ -33,9 +41,6 @@ android {
     kotlin {
         jvmToolchain(17)
     }
-    buildFeatures {
-        viewBinding = true
-    }
 }
 
 dependencies {
@@ -48,3 +53,4 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+
