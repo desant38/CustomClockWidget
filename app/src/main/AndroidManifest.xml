@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -16,7 +15,7 @@
         android:theme="@style/Theme.CustomClockWidget"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".SettingsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,7 +25,7 @@
 
         <receiver
             android:name=".ClockWidgetProvider"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -35,15 +34,12 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
-        <service
-            android:name=".WidgetUpdateService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse" >
-            <property
-                android:name="android.app.foreground.service.special_use"
-                android:value="Your app's widget needs this to update the clock reliably." />
-        </service>
+        <receiver
+            android:name=".WidgetAlarmReceiver"
+            android:exported="false" />
+
+        <!-- БЛОК СЕРВИСА ПОЛНОСТЬЮ УДАЛЕН -->
+
     </application>
 
 </manifest>

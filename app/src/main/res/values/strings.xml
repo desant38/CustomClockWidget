@@ -4,4 +4,6 @@
     <string name="revision">Версия: %1$s</string>
     <string name="date">widget Date</string>
     <string name="time">widget Time</string>
+    <string name="permission_reguest">Предоставить разрешение</string>
+    <string name="permit_request_hint">Для работы виджета необходимо разрешение на использование будильников.</string>
 </resources>
